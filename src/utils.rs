@@ -24,7 +24,7 @@
 
 use user_input::str;
 
-pub const COPYRIGHT_TEXT: &str = "(c) Copyright NotThatRqd 2023 All Rights Reserved";
+pub const COPYRIGHT_TEXT: &str = "Copyright (c) 2023 rad MIT License";
 
 // TODO: use thiserror
 #[derive(Debug)]
