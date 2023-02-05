@@ -1,4 +1,4 @@
-use std::{sync::mpsc, time::{Duration, Instant}, thread, io::stdout};
+use std::{sync::mpsc, time::{Duration, Instant}, thread, io::stdout, fs};
 
 use file_loader::load_file;
 use tui::{backend::CrosstermBackend, Terminal, layout::{Layout, Direction, Constraint, Alignment}, widgets::{Paragraph, Block, Borders, BorderType, Tabs}, style::{Style, Color, Modifier}, text::{Spans, Span}};
@@ -17,6 +17,7 @@ enum Event<I> {
 enum MenuItem {
     Home,
     Pray,
+    Save,
 }
 
 impl From<MenuItem> for usize {
@@ -24,6 +25,7 @@ impl From<MenuItem> for usize {
         match value {
             MenuItem::Home => 0,
             MenuItem::Pray => 1,
+            MenuItem::Save => 2,
         }
     }
 }
@@ -126,6 +128,7 @@ fn main() {
             match active_menu_item {
                 MenuItem::Home => rect.render_widget(render_home(), chunks[1]),
                 MenuItem::Pray => rect.render_widget(render_pray(player_data.prays), chunks[1]),
+                MenuItem::Save => rect.render_widget(render_save(), chunks[1]),
             }
             
         }).expect("can draw on terminal");
@@ -139,9 +142,16 @@ fn main() {
                 },
                 KeyCode::Char('h') => active_menu_item = MenuItem::Home,
                 KeyCode::Char('p') => active_menu_item = MenuItem::Pray,
+                KeyCode::Char('s') => active_menu_item = MenuItem::Save,
                 KeyCode::Char(' ') => {
                     if active_menu_item == MenuItem::Pray {
                         player_data.prays += 1;
+                    }
+
+                    else if active_menu_item == MenuItem::Save {
+                        // save player_data to file
+                        let as_string = serde_json::to_string(&player_data).unwrap();
+                        fs::write("player_data.json", as_string).expect("should be able to write to file");
                     }
                 }
                 _ => (),
@@ -190,6 +200,23 @@ fn main() {
                     .borders(Borders::ALL)
                     .style(Style::default().fg(Color::White))
                     .title("Pray")
+                    .border_type(BorderType::Plain)
+            )
+    }
+
+    fn render_save<'a>() -> Paragraph<'a> {
+        Paragraph::new(vec![
+            Spans::from(vec![Span::styled(
+                "Press [space bar] to save to file",
+                Style::default().fg(Color::Yellow),
+            )]),
+        ])
+            .alignment(Alignment::Center)
+            .block(
+                Block::default()
+                    .borders(Borders::ALL)
+                    .style(Style::default().fg(Color::White))
+                    .title("Save")
                     .border_type(BorderType::Plain)
             )
     }
