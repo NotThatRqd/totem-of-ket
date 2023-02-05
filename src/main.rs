@@ -13,7 +13,7 @@ enum Event<I> {
     Tick,
 }
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, PartialEq, Debug)]
 enum MenuItem {
     Home,
     Pray,
@@ -64,7 +64,7 @@ fn main() {
     let backend = CrosstermBackend::new(stdout());
     let mut terminal = Terminal::new(backend).expect("create terminal");
 
-    let menu_titles = vec!["Home", "Pray", "Load/Save", "Quit"];
+    let menu_titles = vec!["Home", "Pray", "Save", "Quit"];
     let mut active_menu_item = MenuItem::Home;
 
     loop {
@@ -125,7 +125,7 @@ fn main() {
 
             match active_menu_item {
                 MenuItem::Home => rect.render_widget(render_home(), chunks[1]),
-                MenuItem::Pray => (),
+                MenuItem::Pray => rect.render_widget(render_pray(player_data.prays), chunks[1]),
             }
             
         }).expect("can draw on terminal");
@@ -139,6 +139,11 @@ fn main() {
                 },
                 KeyCode::Char('h') => active_menu_item = MenuItem::Home,
                 KeyCode::Char('p') => active_menu_item = MenuItem::Pray,
+                KeyCode::Char(' ') => {
+                    if active_menu_item == MenuItem::Pray {
+                        player_data.prays += 1;
+                    }
+                }
                 _ => (),
             },
             Event::Tick => (),
@@ -157,7 +162,7 @@ fn main() {
                 Style::default().fg(Color::LightBlue),
             )]),
             Spans::from(vec![Span::raw("")]),
-            Spans::from(vec![Span::raw("Press 'p' to access pray, 'h' to go home")]),
+            Spans::from(vec![Span::raw("Press 'p' to access pray, 'h' to go home, 'q' to quit, 's' to save")]),
         ])
         .alignment(Alignment::Center)
         .block(
@@ -170,9 +175,36 @@ fn main() {
         home
     }
 
+    fn render_pray<'a>(pray_amount: u32) -> Paragraph<'a> {
+        Paragraph::new(vec![
+            Spans::from(vec![Span::styled(
+                "Press [space bar] to pray to the totem",
+                Style::default().fg(Color::LightMagenta),
+            )]),
+            Spans::from(vec![Span::raw("")]),
+            Spans::from(vec![Span::raw(format!("You have prayed {} times", pray_amount))]),
+        ])
+            .alignment(Alignment::Center)
+            .block(
+                Block::default()
+                    .borders(Borders::ALL)
+                    .style(Style::default().fg(Color::White))
+                    .title("Pray")
+                    .border_type(BorderType::Plain)
+            )
+    }
 
 
 
+    // vec![
+    //     Span::styled(
+    //         "Press [space bar] to pray to the totem",
+    //         Style::default().fg(Color::LightMagenta)),
+    //     Span::styled(
+    //         format!("Prays: {}", player_data.prays),
+    //         Style::default().fg(Color::LightGreen)
+    //     )
+    // ])
 
 
     // println!("Enter 1 to pray to ket");
