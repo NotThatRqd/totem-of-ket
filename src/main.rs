@@ -28,7 +28,6 @@ impl From<MenuItem> for usize {
     }
 }
 
-//TODO: do some tui stuff with maybe tui-rs or crossterm
 fn main() {
     let mut player_data = load_file();
 
@@ -71,7 +70,7 @@ fn main() {
     loop {
         terminal.draw(|rect| {
             let size = rect.size();
-            let chuncks = Layout::default()
+            let chunks = Layout::default()
                 .direction(Direction::Vertical)
                 .margin(2)
                 .constraints([
@@ -108,7 +107,7 @@ fn main() {
                 .highlight_style(Style::default().fg(Color::Yellow))
                 .divider(Span::raw("|"));
 
-            rect.render_widget(tabs, chuncks[0]);
+            rect.render_widget(tabs, chunks[0]);
 
             let copyright = Paragraph::new(COPYRIGHT_TEXT)
                 .style(Style::default().fg(Color::Green))
@@ -121,17 +120,17 @@ fn main() {
                         .border_type(BorderType::Plain)
                 );
 
-            rect.render_widget(copyright, chuncks[2]);
+            rect.render_widget(copyright, chunks[2]);
 
 
             match active_menu_item {
-                MenuItem::Home => rect.render_widget(render_home(), chuncks[1]),
+                MenuItem::Home => rect.render_widget(render_home(), chunks[1]),
                 MenuItem::Pray => (),
             }
             
         }).expect("can draw on terminal");
 
-        match rx.recv().expect("able to recive from channel") {
+        match rx.recv().expect("able to receive from channel") {
             Event::Input(event) => match event.code {
                 KeyCode::Char('q') => {
                     disable_raw_mode().expect("can leave raw mode");
