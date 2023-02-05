@@ -126,7 +126,7 @@ fn main() {
 
 
             match active_menu_item {
-                MenuItem::Home => rect.render_widget(render_home(), chunks[1]),
+                MenuItem::Home => rect.render_widget(render_home(&player_data.name), chunks[1]),
                 MenuItem::Pray => rect.render_widget(render_pray(player_data.prays), chunks[1]),
                 MenuItem::Save => rect.render_widget(render_save(), chunks[1]),
             }
@@ -160,10 +160,11 @@ fn main() {
         }
     }
 
-    fn render_home<'a>() -> Paragraph<'a> {
+    fn render_home(name: &str) -> Paragraph {
         let home = Paragraph::new(vec![
             Spans::from(vec![Span::raw("")]),
-            Spans::from(vec![Span::raw("Welcome")]),
+            Spans::from(vec![Span::raw("Welcome,")]),
+            Spans::from(vec![Span::raw(name)]),
             Spans::from(vec![Span::raw("")]),
             Spans::from(vec![Span::raw("to")]),
             Spans::from(vec![Span::raw("")]),
