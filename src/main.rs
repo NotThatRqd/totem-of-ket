@@ -246,36 +246,4 @@ fn main() {
             )
     }
 
-
-
-    // vec![
-    //     Span::styled(
-    //         "Press [space bar] to pray to the totem",
-    //         Style::default().fg(Color::LightMagenta)),
-    //     Span::styled(
-    //         format!("Prays: {}", player_data.prays),
-    //         Style::default().fg(Color::LightGreen)
-    //     )
-    // ])
-
-
-    // println!("Enter 1 to pray to ket");
-    // println!("Enter 2 to save file");
-    // println!("Enter ! to exit");
-
-    // loop {
-    //     let choice = str();
-    //     if choice == "1" {
-    //         player_data.prays += 1;
-    //     }
-
-    //     else if choice == "2" {
-    //         let as_string = serde_json::to_string(&player_data).unwrap();
-    //         fs::write("player_data.json", as_string).expect("should be able to write to file");
-    //     }
-
-    //     else if choice == "!" {
-    //         break;
-    //     }
-    // }
 }
