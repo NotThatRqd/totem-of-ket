@@ -34,6 +34,8 @@ use crate::utils::get_bool;
 mod file_loader;
 mod utils;
 
+const PLAYER_DATA_PATH: &str = "player_data.json";
+
 enum Event<I> {
     Input(I),
     Tick,
@@ -63,7 +65,7 @@ fn main() {
 
     // load save file or create a new one depending on user input
     let mut player_data = if should_load_save_file {
-        load_save_file("player_data.json").expect("load save file")
+        load_save_file(PLAYER_DATA_PATH).expect("load save file")
     } else {
         file_loader::PlayerData::default()
     };
@@ -165,7 +167,7 @@ fn main() {
 
                     else if active_menu_item == MenuItem::Save {
                         // save player_data to file
-                        save_save_file("player_data.json", &player_data).expect("save save file");
+                        save_save_file(PLAYER_DATA_PATH, &player_data).expect("save save file");
                     }
                 }
                 _ => (),
