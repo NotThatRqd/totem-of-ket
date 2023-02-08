@@ -23,11 +23,12 @@
  */
 
 use std::{sync::mpsc, time::{Duration, Instant}, thread, io::stdout, fs};
-
-use file_loader::load_file;
+use file_loader::load_save_file;
 use tui::{backend::CrosstermBackend, Terminal, layout::{Layout, Direction, Constraint, Alignment}, widgets::{Paragraph, Block, Borders, BorderType, Tabs}, style::{Style, Color, Modifier}, text::{Spans, Span}};
 use crossterm::{terminal::{enable_raw_mode, EnterAlternateScreen, disable_raw_mode, LeaveAlternateScreen}, event::{self, KeyCode}, execute};
+use crossterm::event::KeyEvent;
 use utils::COPYRIGHT_TEXT;
+use crate::utils::get_bool;
 
 mod file_loader;
 mod utils;
@@ -55,38 +56,26 @@ impl From<MenuItem> for usize {
 }
 
 fn main() {
-    let mut player_data = load_file();
+    println!("load save file? (y/n)");
+
+    let should_load_save_file = get_bool().expect("get bool");
+
+    // load save file or create a new one depending on user input
+    let mut player_data = if should_load_save_file {
+        load_save_file("player_data.json").expect("load save file")
+    } else {
+        file_loader::PlayerData::default()
+    };
 
     enable_raw_mode().expect("run in raw mode");
 
 
     // setup an input loop
-    let (tx, rx) = mpsc::channel();
-    let tick_rate = Duration::from_millis(200);
-    thread::spawn(move || {
-        let mut last_tick = Instant::now();
-        loop {
-            let timeout = tick_rate
-                .checked_sub(last_tick.elapsed())
-                .unwrap_or_else(|| Duration::from_secs(0));
-
-            if event::poll(timeout).expect("use poll") {
-                if let event::Event::Key(key) = event::read().expect("read events") {
-                    tx.send(Event::Input(key)).expect("send key event");
-                }
-            }
-
-            if last_tick.elapsed() >= tick_rate {
-                if let Ok(_) = tx.send(Event::Tick) {
-                    last_tick = Instant::now();
-                }
-            }
-        }
-    });
+    let rx = input_loop();
 
     enable_raw_mode().expect("enter raw mode");
-
     execute!(stdout(), EnterAlternateScreen).expect("enter alt screen");
+
     let backend = CrosstermBackend::new(stdout());
     let mut terminal = Terminal::new(backend).expect("create terminal");
 
@@ -246,4 +235,31 @@ fn main() {
             )
     }
 
+}
+
+fn input_loop() -> std::sync::mpsc::Receiver<Event<KeyEvent>> {
+    let (tx, rx) = mpsc::channel();
+    let tick_rate = Duration::from_millis(200);
+    thread::spawn(move || {
+        let mut last_tick = Instant::now();
+        loop {
+            let timeout = tick_rate
+                .checked_sub(last_tick.elapsed())
+                .unwrap_or_else(|| Duration::from_secs(0));
+
+            if event::poll(timeout).expect("use poll") {
+                if let event::Event::Key(key) = event::read().expect("read events") {
+                    tx.send(Event::Input(key)).expect("send key event");
+                }
+            }
+
+            if last_tick.elapsed() >= tick_rate {
+                if let Ok(_) = tx.send(Event::Tick) {
+                    last_tick = Instant::now();
+                }
+            }
+        }
+    });
+
+    rx
 }

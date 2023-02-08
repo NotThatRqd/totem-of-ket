@@ -24,7 +24,6 @@
 
 use std::fs;
 use serde::{Deserialize, Serialize};
-use crate::utils::get_bool;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct PlayerData {
@@ -41,19 +40,34 @@ impl Default for PlayerData {
     }
 }
 
-pub fn load_file() -> PlayerData {
-    println!("load save-file? (y/n)");
-    let should_load = get_bool().expect("should be a bool");
-
-    if !should_load {
-        return PlayerData::default();
-    }
-
-    let file_contents = fs::read_to_string("player_data.json")
-        .expect("player_data.json should be readable");
-
-    let player_data: PlayerData = serde_json::from_str(&file_contents)
-        .expect("should be able to parse as json");
-
-    player_data
+#[derive(Debug)]
+pub enum LoadSaveFileError {
+    IoError(std::io::Error),
+    JsonError(serde_json::error::Error),
 }
+
+// returns a result of either a PlayerData struct or a file not found error
+pub fn load_save_file(path: &str) -> Result<PlayerData, LoadSaveFileError>{
+
+    let file_contents = match fs::read_to_string(path) {
+        Ok(file_contents) => file_contents,
+        Err(e) => return Err(LoadSaveFileError::IoError(e)),
+    };
+
+    let player_data: PlayerData = match serde_json::from_str(&file_contents) {
+        Ok(player_data) => player_data,
+        Err(e) => return Err(LoadSaveFileError::JsonError(e)),
+    };
+
+    Ok(player_data)
+}
+
+//            println!("No save file found. Would you like to create one? (y/n)");
+//             if get_bool().unwrap() {
+//                 let player_data = PlayerData::default();
+//                 let player_data_json = serde_json::to_string(&player_data).unwrap();
+//                 fs::write("player_data.json", player_data_json).unwrap();
+//                 return Ok(player_data);
+//             } else {
+//                 return Err(load_save_file_error::FileNotFound);
+//             }
