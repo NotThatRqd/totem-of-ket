@@ -28,6 +28,7 @@ use tui::{backend::CrosstermBackend, Terminal, layout::{Layout, Direction, Const
 use crossterm::{terminal::{enable_raw_mode, EnterAlternateScreen, disable_raw_mode, LeaveAlternateScreen}, event::{self, KeyCode}, execute};
 use crossterm::event::KeyEvent;
 use utils::COPYRIGHT_TEXT;
+use crate::file_loader::save_save_file;
 use crate::utils::get_bool;
 
 mod file_loader;
@@ -158,13 +159,13 @@ fn main() {
                 KeyCode::Char('s') => active_menu_item = MenuItem::Save,
                 KeyCode::Char(' ') => {
                     if active_menu_item == MenuItem::Pray {
+                        // increment prays
                         player_data.prays += 1;
                     }
 
                     else if active_menu_item == MenuItem::Save {
                         // save player_data to file
-                        let as_string = serde_json::to_string(&player_data).unwrap();
-                        fs::write("player_data.json", as_string).expect("should be able to write to file");
+                        save_save_file("player_data.json", &player_data).expect("save save file");
                     }
                 }
                 _ => (),
